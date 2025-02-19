@@ -1,29 +1,41 @@
--- Initialize the library
+-- Lurnai UI
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/lIlIlIlIlIlIlIlIlIllIlIlIlIlIlIlIlIlIl/Lurnai-UI-SOON-/refs/heads/main/LurnAi%20Libary"))()
 
--- Create a new window
-local Window = Library.new("My Cool Script")
-
--- Initialize the tab system
+-- Initialize Window
+local Window = Library.new("Lurnai UI")
 Window = Library:CreateTabSystem(Window)
 
--- Create tabs and store their content
+-- Create Tabs
 local MainTab = Window:AddTab("Main")
-local MainContent = MainTab.TabContent
+local SettingsTab = Window:AddTab("Settings")
+local CreditsTab = Window:AddTab("Credits")
 
--- Now create elements with the correct parent
-Library:CreateButton(MainContent, "Click Me!", function()
-    print("Button clicked!")
+-- Main Tab Elements
+Library:CreateButton(MainTab, "Button Example", function()
+    print("Button Clicked!")
 end)
 
-Library:CreateToggle(MainContent, "Enable Feature", false, function(state)
-    if state then
-        print("Feature enabled")
-    else
-        print("Feature disabled")
-    end
+Library:CreateToggle(MainTab, "Toggle Example", false, function(state)
+    print("Toggle State:", state)
 end)
 
-Library:CreateSlider(MainContent, "Speed", 0, 100, 50, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+Library:CreateSlider(MainTab, "Slider Example", 0, 100, 50, function(value)
+    print("Slider Value:", value)
 end)
+
+-- Settings Tab Elements
+Library:CreateButton(SettingsTab, "Save Settings", function()
+    print("Settings Saved!")
+end)
+
+Library:CreateToggle(SettingsTab, "Dark Mode", true, function(state)
+    print("Dark Mode:", state)
+end)
+
+-- Credits Tab Elements
+Library:CreateButton(CreditsTab, "Copy Discord", function()
+    setclipboard("discord.gg/example")
+end)
+
+-- Notification Example
+Library:Notify("Lurnai UI", "Successfully loaded!", 3)
