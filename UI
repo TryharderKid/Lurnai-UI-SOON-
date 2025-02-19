@@ -1,19 +1,22 @@
 -- Initialize the library
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/lIlIlIlIlIlIlIlIlIllIlIlIlIlIlIlIlIlIl/Lurnai-UI-SOON-/refs/heads/main/LurnAi%20Libary"))()
+
 -- Create a new window
 local Window = Library.new("My Cool Script")
 
--- Create tabs
-local MainTab = Window:AddTab("Main", "rbxassetid://ICON_ID")
-local SettingsTab = Window:AddTab("Settings", "rbxassetid://ICON_ID")
+-- Initialize the tab system
+Window = Library:CreateTabSystem(Window)
 
--- Create a button
-Library:CreateButton(MainTab, "Click Me!", function()
+-- Create tabs and store their content
+local MainTab = Window:AddTab("Main")
+local MainContent = MainTab.TabContent
+
+-- Now create elements with the correct parent
+Library:CreateButton(MainContent, "Click Me!", function()
     print("Button clicked!")
 end)
 
--- Create a toggle
-Library:CreateToggle(MainTab, "Enable Feature", false, function(state)
+Library:CreateToggle(MainContent, "Enable Feature", false, function(state)
     if state then
         print("Feature enabled")
     else
@@ -21,10 +24,6 @@ Library:CreateToggle(MainTab, "Enable Feature", false, function(state)
     end
 end)
 
--- Create a slider
-Library:CreateSlider(MainTab, "Speed", 0, 100, 50, function(value)
+Library:CreateSlider(MainContent, "Speed", 0, 100, 50, function(value)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
 end)
-
--- Create a notification
-Library:Notify("Success", "Script loaded successfully!", 3)
