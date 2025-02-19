@@ -1,0 +1,494 @@
+local LurnaiUI = {
+    Name = "Lurnai UI",
+    Version = "1.0.0",
+    Elements = {},
+    Flags = {},
+    Theme = {
+        Primary = Color3.fromRGB(24, 25, 38),
+        Secondary = Color3.fromRGB(30, 31, 48),
+        Accent = Color3.fromRGB(96, 110, 255),
+        Text = Color3.fromRGB(255, 255, 255),
+        DarkText = Color3.fromRGB(175, 175, 175),
+        LightContrast = Color3.fromRGB(35, 37, 54),
+        DarkContrast = Color3.fromRGB(21, 22, 33),
+    },
+    Connections = {},
+    Settings = {
+        SaveConfig = true,
+        ConfigName = "LurnaiUI_Config",
+    }
+}
+
+local function InitializeEnvironment()
+    local env = {
+        gui_parent = (gethui and gethui()) or (get_hidden_gui and get_hidden_gui()) or game:GetService("CoreGui"),
+        protect_gui = (syn and syn.protect_gui) or (protect_gui and protect_gui) or function() end,
+        secure_call = (syn and syn.secure_call) or function(f, ...) return f(...) end,
+        cloneref = (cloneref or function(ref) return ref end),
+    }
+    return env
+end
+
+local env = InitializeEnvironment()
+local services = {
+    TweenService = env.cloneref(game:GetService("TweenService")),
+    CoreGui = env.cloneref(game:GetService("CoreGui")),
+    UserInputService = env.cloneref(game:GetService("UserInputService")),
+    RunService = env.cloneref(game:GetService("RunService")),
+    Players = env.cloneref(game:GetService("Players")),
+    GuiService = env.cloneref(game:GetService("GuiService"))
+}
+
+local TWEEN_INFO = {
+    Short = TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+    Bounce = TweenInfo.new(0.35, Enum.EasingStyle.Bounce),
+}
+
+function LurnaiUI.new(title)
+    local window = {}
+    
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "LurnaiUI_" .. tostring(math.random(1000000, 9999999))
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    
+    env.protect_gui(ScreenGui)
+    ScreenGui.Parent = env.gui_parent
+    
+    local MainContainer = Instance.new("Frame")
+    MainContainer.Name = "MainContainer"
+    MainContainer.Size = UDim2.new(0, 800, 0, 500)
+    MainContainer.Position = UDim2.new(0.5, -400, 0.5, -250)
+    MainContainer.BackgroundTransparency = 1
+    MainContainer.Parent = ScreenGui
+    
+    local Shadow = Instance.new("ImageLabel")
+    Shadow.Name = "Shadow"
+    Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    Shadow.BackgroundTransparency = 1
+    Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Shadow.Size = UDim2.new(1, 35, 1, 35)
+    Shadow.Image = "rbxassetid://5554236805"
+    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.ImageTransparency = 0.3
+    Shadow.Parent = MainContainer
+    
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(1, 0, 1, 0)
+    MainFrame.BackgroundColor3 = LurnaiUI.Theme.Primary
+    MainFrame.Parent = MainContainer
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.Parent = MainFrame
+    
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
+    TitleBar.BackgroundColor3 = LurnaiUI.Theme.Secondary
+    TitleBar.Parent = MainFrame
+    
+    local TitleText = Instance.new("TextLabel")
+    TitleText.Name = "Title"
+    TitleText.Size = UDim2.new(1, -10, 1, 0)
+    TitleText.Position = UDim2.new(0, 10, 0, 0)
+    TitleText.BackgroundTransparency = 1
+    TitleText.Text = title or "Lurnai UI"
+    TitleText.TextColor3 = LurnaiUI.Theme.Text
+    TitleText.TextSize = 14
+    TitleText.Font = Enum.Font.GothamBold
+    TitleText.TextXAlignment = Enum.TextXAlignment.Left
+    TitleText.Parent = TitleBar
+    
+    local dragging, dragInput, dragStart, startPos
+    
+    local function updateDrag(input)
+        local delta = input.Position - dragStart
+        MainContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainContainer.Position
+        end
+    end)
+    
+    services.UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateDrag(input)
+        end
+    end)
+    
+    services.UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    local ContentContainer = Instance.new("Frame")
+    ContentContainer.Name = "ContentContainer"
+    ContentContainer.Position = UDim2.new(0, 0, 0, 30)
+    ContentContainer.Size = UDim2.new(1, 0, 1, -30)
+    ContentContainer.BackgroundTransparency = 1
+    ContentContainer.Parent = MainFrame
+    
+    window.ScreenGui = ScreenGui
+    window.MainContainer = MainContainer
+    window.ContentContainer = ContentContainer
+    
+    return window
+end
+
+function LurnaiUI:CreateTabSystem(window)
+    local TabContainer = Instance.new("Frame")
+    TabContainer.Name = "TabContainer"
+    TabContainer.Size = UDim2.new(0, 150, 1, 0)
+    TabContainer.BackgroundColor3 = LurnaiUI.Theme.Secondary
+    TabContainer.Parent = window.ContentContainer
+    
+    local TabList = Instance.new("ScrollingFrame")
+    TabList.Name = "TabList"
+    TabList.Size = UDim2.new(1, 0, 1, 0)
+    TabList.BackgroundTransparency = 1
+    TabList.ScrollBarThickness = 2
+    TabList.ScrollBarImageColor3 = LurnaiUI.Theme.Accent
+    TabList.Parent = TabContainer
+    
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, 5)
+    UIListLayout.Parent = TabList
+    
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0, 5)
+    UIPadding.Parent = TabList
+    
+    local TabContentArea = Instance.new("Frame")
+    TabContentArea.Name = "TabContentArea"
+    TabContentArea.Position = UDim2.new(0, 155, 0, 0)
+    TabContentArea.Size = UDim2.new(1, -160, 1, 0)
+    TabContentArea.BackgroundTransparency = 1
+    TabContentArea.Parent = window.ContentContainer
+    
+    function window:AddTab(name, icon)
+        local tab = {}
+        
+        local TabButton = Instance.new("TextButton")
+        TabButton.Name = name .. "Tab"
+        TabButton.Size = UDim2.new(1, -10, 0, 35)
+        TabButton.Position = UDim2.new(0, 5, 0, 0)
+        TabButton.BackgroundColor3 = LurnaiUI.Theme.Primary
+        TabButton.BackgroundTransparency = 1
+        TabButton.Text = name
+        TabButton.TextColor3 = LurnaiUI.Theme.DarkText
+        TabButton.TextSize = 14
+        TabButton.Font = Enum.Font.GothamSemibold
+        TabButton.Parent = TabList
+        
+        if icon then
+            local Icon = Instance.new("ImageLabel")
+            Icon.Size = UDim2.new(0, 20, 0, 20)
+            Icon.Position = UDim2.new(0, 5, 0.5, -10)
+            Icon.BackgroundTransparency = 1
+            Icon.Image = icon
+            Icon.ImageColor3 = LurnaiUI.Theme.DarkText
+            Icon.Parent = TabButton
+            
+            TabButton.TextXAlignment = Enum.TextXAlignment.Right
+            TabButton.Text = "  " .. name
+        end
+        
+        local TabContent = Instance.new("ScrollingFrame")
+        TabContent.Name = name .. "Content"
+        TabContent.Size = UDim2.new(1, 0, 1, 0)
+        TabContent.BackgroundTransparency = 1
+        TabContent.ScrollBarThickness = 3
+        TabContent.ScrollBarImageColor3 = LurnaiUI.Theme.Accent
+        TabContent.Visible = false
+        TabContent.Parent = TabContentArea
+        
+        local ContentList = Instance.new("UIListLayout")
+        ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+        ContentList.Padding = UDim.new(0, 5)
+        ContentList.Parent = TabContent
+        
+        local ContentPadding = Instance.new("UIPadding")
+        ContentPadding.PaddingTop = UDim.new(0, 5)
+        ContentPadding.PaddingLeft = UDim.new(0, 5)
+        ContentPadding.PaddingRight = UDim.new(0, 5)
+        ContentPadding.Parent = TabContent
+        
+        TabButton.MouseButton1Click:Connect(function()
+            for _, v in pairs(TabContentArea:GetChildren()) do
+                if v:IsA("ScrollingFrame") then
+                    v.Visible = false
+                end
+            end
+            
+            for _, v in pairs(TabList:GetChildren()) do
+                if v:IsA("TextButton") then
+                    services.TweenService:Create(v, TWEEN_INFO.Short, {
+                        BackgroundTransparency = 1,
+                        TextColor3 = LurnaiUI.Theme.DarkText
+                    }):Play()
+                end
+            end
+            
+            TabContent.Visible = true
+            services.TweenService:Create(TabButton, TWEEN_INFO.Short, {
+                BackgroundTransparency = 0,
+                TextColor3 = LurnaiUI.Theme.Text
+            }):Play()
+        end)
+        
+        TabButton.MouseEnter:Connect(function()
+            if not TabContent.Visible then
+                services.TweenService:Create(TabButton, TWEEN_INFO.Short, {
+                    BackgroundTransparency = 0.8,
+                    TextColor3 = LurnaiUI.Theme.Text
+                }):Play()
+            end
+        end)
+        
+        TabButton.MouseLeave:Connect(function()
+            if not TabContent.Visible then
+                services.TweenService:Create(TabButton, TWEEN_INFO.Short, {
+                    BackgroundTransparency = 1,
+                    TextColor3 = LurnaiUI.Theme.DarkText
+                }):Play()
+            end
+        end)
+        
+        return tab
+    end
+    
+    return window
+end
+
+function LurnaiUI:CreateButton(tab, text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Name = text .. "Button"
+    Button.Size = UDim2.new(1, 0, 0, 35)
+    Button.BackgroundColor3 = LurnaiUI.Theme.Secondary
+    Button.Text = text
+    Button.TextColor3 = LurnaiUI.Theme.Text
+    Button.TextSize = 14
+    Button.Font = Enum.Font.GothamSemibold
+    Button.Parent = tab.TabContent
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.Parent = Button
+    
+    Button.MouseEnter:Connect(function()
+        services.TweenService:Create(Button, TWEEN_INFO.Short, {
+            BackgroundColor3 = LurnaiUI.Theme.Accent
+        }):Play()
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        services.TweenService:Create(Button, TWEEN_INFO.Short, {
+            BackgroundColor3 = LurnaiUI.Theme.Secondary
+        }):Play()
+    end)
+    
+    Button.MouseButton1Click:Connect(function()
+        callback()
+        
+        services.TweenService:Create(Button, TWEEN_INFO.Short, {
+            BackgroundColor3 = LurnaiUI.Theme.Primary
+        }):Play()
+        
+        wait(0.2)
+        
+        services.TweenService:Create(Button, TWEEN_INFO.Short, {
+            BackgroundColor3 = LurnaiUI.Theme.Secondary
+        }):Play()
+    end)
+end
+
+function LurnaiUI:CreateToggle(tab, text, default, callback)
+    local ToggleContainer = Instance.new("Frame")
+    ToggleContainer.Name = text .. "Toggle"
+    ToggleContainer.Size = UDim2.new(1, 0, 0, 35)
+    ToggleContainer.BackgroundColor3 = LurnaiUI.Theme.Secondary
+    ToggleContainer.Parent = tab.TabContent
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 6)
+    ToggleCorner.Parent = ToggleContainer
+    
+    local ToggleText = Instance.new("TextLabel")
+    ToggleText.Size = UDim2.new(1, -50, 1, 0)
+    ToggleText.Position = UDim2.new(0, 10, 0, 0)
+    ToggleText.BackgroundTransparency = 1
+    ToggleText.Text = text
+    ToggleText.TextColor3 = LurnaiUI.Theme.Text
+    ToggleText.TextSize = 14
+    ToggleText.Font = Enum.Font.GothamSemibold
+    ToggleText.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleText.Parent = ToggleContainer
+    
+    local ToggleButton = Instance.new("Frame")
+    ToggleButton.Size = UDim2.new(0, 40, 0, 20)
+    ToggleButton.Position = UDim2.new(1, -45, 0.5, -10)
+    ToggleButton.BackgroundColor3 = LurnaiUI.Theme.DarkContrast
+    ToggleButton.Parent = ToggleContainer
+    
+    local ToggleButtonCorner = Instance.new("UICorner")
+    ToggleButtonCorner.CornerRadius = UDim.new(1, 0)
+    ToggleButtonCorner.Parent = ToggleButton
+    
+    local ToggleIndicator = Instance.new("Frame")
+    ToggleIndicator.Size = UDim2.new(0, 16, 0, 16)
+    ToggleIndicator.Position = UDim2.new(0, 2, 0.5, -8)
+    ToggleIndicator.BackgroundColor3 = LurnaiUI.Theme.Text
+    ToggleIndicator.Parent = ToggleButton
+    
+    local ToggleIndicatorCorner = Instance.new("UICorner")
+    ToggleIndicatorCorner.CornerRadius = UDim.new(1, 0)
+    ToggleIndicatorCorner.Parent = ToggleIndicator
+    
+    local Enabled = default or false
+    
+    local function UpdateToggle()
+        if Enabled then
+            services.TweenService:Create(ToggleButton, TWEEN_INFO.Short, {
+                BackgroundColor3 = LurnaiUI.Theme.Accent
+            }):Play()
+            
+            services.TweenService:Create(ToggleIndicator, TWEEN_INFO.Short, {
+                Position = UDim2.new(1, -18, 0.5, -8)
+            }):Play()
+        else
+            services.TweenService:Create(ToggleButton, TWEEN_INFO.Short, {
+                BackgroundColor3 = LurnaiUI.Theme.DarkContrast
+            }):Play()
+            
+            services.TweenService:Create(ToggleIndicator, TWEEN_INFO.Short, {
+                Position = UDim2.new(0, 2, 0.5, -8)
+            }):Play()
+        end
+        
+        callback(Enabled)
+    end
+    
+    ToggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Enabled = not Enabled
+            UpdateToggle()
+        end
+    end)
+    
+    UpdateToggle()
+end
+
+function LurnaiUI:CreateSlider(tab, text, min, max, default, callback)
+    local SliderContainer = Instance.new("Frame")
+    SliderContainer.Name = text .. "Slider"
+    SliderContainer.Size = UDim2.new(1, 0, 0, 50)
+    SliderContainer.BackgroundColor3 = LurnaiUI.Theme.Secondary
+    SliderContainer.Parent = tab.TabContent
+    
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 6)
+    SliderCorner.Parent = SliderContainer
+    
+    local SliderText = Instance.new("TextLabel")
+    SliderText.Size = UDim2.new(1, -10, 0, 25)
+    SliderText.Position = UDim2.new(0, 10, 0, 0)
+    SliderText.BackgroundTransparency = 1
+    SliderText.Text = text
+    SliderText.TextColor3 = LurnaiUI.Theme.Text
+    SliderText.TextSize = 14
+    SliderText.Font = Enum.Font.GothamSemibold
+    SliderText.TextXAlignment = Enum.TextXAlignment.Left
+    SliderText.Parent = SliderContainer
+    
+    local SliderValue = Instance.new("TextLabel")
+    SliderValue.Size = UDim2.new(0, 50, 0, 25)
+    SliderValue.Position = UDim2.new(1, -60, 0, 0)
+    SliderValue.BackgroundTransparency = 1
+    SliderValue.Text = tostring(default)
+    SliderValue.TextColor3 = LurnaiUI.Theme.Text
+    SliderValue.TextSize = 14
+    SliderValue.Font = Enum.Font.GothamSemibold
+    SliderValue.Parent = SliderContainer
+    
+    local SliderBar = Instance.new("Frame")
+    SliderBar.Size = UDim2.new(1, -20, 0, 4)
+    SliderBar.Position = UDim2.new(0, 10, 0, 35)
+    SliderBar.BackgroundColor3 = LurnaiUI.Theme.DarkContrast
+    SliderBar.Parent = SliderContainer
+    
+    local SliderBarCorner = Instance.new("UICorner")
+    SliderBarCorner.CornerRadius = UDim.new(1, 0)
+    SliderBarCorner.Parent = SliderBar
+    
+    local SliderFill = Instance.new("Frame")
+    SliderFill.Size = UDim2.new(0, 0, 1, 0)
+    SliderFill.BackgroundColor3 = LurnaiUI.Theme.Accent
+    SliderFill.Parent = SliderBar
+    
+    local SliderFillCorner = Instance.new("UICorner")
+    SliderFillCorner.CornerRadius = UDim.new(1, 0)
+    SliderFillCorner.Parent = SliderFill
+    
+    function LurnaiUI:Notify(title, description, duration)
+        duration = duration or 3
+        
+        local NotificationContainer = Instance.new("Frame")
+        NotificationContainer.Name = "Notification"
+        NotificationContainer.Size = UDim2.new(0, 250, 0, 80)
+        NotificationContainer.Position = UDim2.new(1, -270, 1, -100)
+        NotificationContainer.BackgroundColor3 = LurnaiUI.Theme.Secondary
+        NotificationContainer.BackgroundTransparency = 0
+        NotificationContainer.Parent = ScreenGui
+        
+        local NotificationCorner = Instance.new("UICorner")
+        NotificationCorner.CornerRadius = UDim.new(0, 6)
+        NotificationCorner.Parent = NotificationContainer
+        
+        local NotificationTitle = Instance.new("TextLabel")
+        NotificationTitle.Size = UDim2.new(1, -20, 0, 30)
+        NotificationTitle.Position = UDim2.new(0, 10, 0, 5)
+        NotificationTitle.BackgroundTransparency = 1
+        NotificationTitle.Text = title
+        NotificationTitle.TextColor3 = LurnaiUI.Theme.Text
+        NotificationTitle.TextSize = 16
+        NotificationTitle.Font = Enum.Font.GothamBold
+        NotificationTitle.TextXAlignment = Enum.TextXAlignment.Left
+        NotificationTitle.Parent = NotificationContainer
+        
+        local NotificationDesc = Instance.new("TextLabel")
+        NotificationDesc.Size = UDim2.new(1, -20, 0, 30)
+        NotificationDesc.Position = UDim2.new(0, 10, 0, 35)
+        NotificationDesc.BackgroundTransparency = 1
+        NotificationDesc.Text = description
+        NotificationDesc.TextColor3 = LurnaiUI.Theme.DarkText
+        NotificationDesc.TextSize = 14
+        NotificationDesc.Font = Enum.Font.Gotham
+        NotificationDesc.TextXAlignment = Enum.TextXAlignment.Left
+        NotificationDesc.Parent = NotificationContainer
+        
+        NotificationContainer.Position = UDim2.new(1, 0, 1, -100)
+        services.TweenService:Create(NotificationContainer, TWEEN_INFO.Bounce, {
+            Position = UDim2.new(1, -270, 1, -100)
+        }):Play()
+        
+        wait(duration)
+        
+        services.TweenService:Create(NotificationContainer, TWEEN_INFO.Short, {
+            Position = UDim2.new(1, 0, 1, -100)
+        }):Play()
+        
+        wait(0.3)
+        NotificationContainer:Destroy()
+    end
+end
+
+return LurnaiUI
