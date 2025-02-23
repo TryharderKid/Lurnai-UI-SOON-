@@ -1,0 +1,103 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/lIlIlIlIlIlIlIlIlIllIlIlIlIlIlIlIlIlIl/Lurnai-UI-SOON-/refs/heads/main/Test%20505"))()
+
+local Window = Library:CreateWindow({
+    Name = "Lurnai | By Masterboy123",
+    LoadingTitle = "Lurnai Interface Suite",
+    LoadingSubtitle = "by Masterboy123",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = nil
+    }
+})
+
+-- Create All Tabs
+local Tab1 = Window:CreateTab("Tab 1", 9792633885)
+local Tab2 = Window:CreateTab("Tab 2", 9792631281)
+local Tab3 = Window:CreateTab("Tab 3", 9792631881)
+
+-- Section in Tab 1
+local Section1 = Tab1:CreateSection("Section")
+
+Tab1:CreateButton({
+    Name = "Button",
+    Callback = function()
+    end
+})
+
+Tab1:CreateToggle({
+    Name = "Toggle",
+    CurrentValue = false,
+    Callback = function(Value)
+    end
+})
+
+Tab1:CreateSlider({
+    Name = "Slider",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "Value",
+    CurrentValue = 10,
+    Callback = function(Value)
+    end
+})
+
+Tab1:CreateDropdown({
+    Name = "Dropdown",
+    Options = {"Option 1", "Option 2", "Option 3"},
+    CurrentOption = "Option 1",
+    Callback = function(Option)
+    end
+})
+
+-- Section in Tab 2
+local Section2 = Tab2:CreateSection("Section")
+
+Tab2:CreateInput({
+    Name = "Input",
+    PlaceholderText = "Input Text Here",
+    Callback = function(Text)
+    end
+})
+
+Tab2:CreateColorPicker({
+    Name = "Color Picker",
+    Color = Color3.fromRGB(255,255,255),
+    Callback = function(Value)
+    end
+})
+
+Tab2:CreateKeybind({
+    Name = "Keybind",
+    CurrentKeybind = "Q",
+    Callback = function(Keybind)
+    end
+})
+
+-- Section in Tab 3
+local Section3 = Tab3:CreateSection("Section")
+
+Tab3:CreateParagraph({
+    Title = "Paragraph",
+    Content = "This is a paragraph content"
+})
+
+Tab3:CreateLabel("Label")
+
+Tab3:CreateToggle({
+    Name = "Toggle with Keybind",
+    CurrentValue = false,
+    KeybindEnabled = true,
+    CurrentKeybind = "R",
+    Callback = function(Value)
+    end
+})
+
+Tab3:CreateDropdown({
+    Name = "Multi Dropdown",
+    Options = {"Option 1","Option 2","Option 3"},
+    CurrentOption = {"Option 1"},
+    MultiSelection = true,
+    Callback = function(Option)
+    end
+})
